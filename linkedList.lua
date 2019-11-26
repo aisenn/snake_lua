@@ -54,6 +54,18 @@ function linkedList.erase(node)
 	return tmp
 end
 
+function linkedList.len(node)
+	local i = 0
+
+	local it = node
+	repeat
+		i = i + 1
+		it = it.next
+	until it == node
+
+	return i
+end
+
 function linkedList.print(node)
 	local it = node
 	repeat

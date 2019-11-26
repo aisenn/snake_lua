@@ -28,11 +28,12 @@ setmetatable(left, mt)
 setmetatable(down, mt)
 
 local board = {}
-local boardSize = {width = 10, height = 10}
+local boardSize = {width = 50, height = 30}
 local char = {}
 
 local snake = {list = {}, dir = down}
 local food = {x = {}, y = {}, present = false}
+local gameSpeed = 3
 
 function printAll()
 	local it = snake.list
@@ -53,7 +54,6 @@ function move()
 end
 
 function checkFood()
-
 	local head = snake.list
 
 	if (head.value.x == food.x and head.value.y == food.y) then
@@ -66,7 +66,6 @@ function checkCollision()
 	local it = head.next
 
 	if checkFood() then
-		-- print(food.x, food.y)
 		list.push_back(snake.list, {})
 		food.present = false
 	end
@@ -170,9 +169,19 @@ function drawScreen()
 		end
 	end
 
+	if not food.present then
+		if list.len(snake.list) % 5 == 0 then
+			if gameSpeed - 0.2 > 0 then
+				gameSpeed = gameSpeed - 0.2
+			else
+				gameSpeed = 0.2
+			end
+		end
+	end
+
 	setFood()
 	if food.present then
-		draw_point(food.x, food.y, COLOR_RED, "$")
+		draw_point(food.x, food.y, COLOR_RED, "")
 	end
 
 	local it = snake.list
@@ -205,22 +214,24 @@ function handleInput()
 					[string.byte('w')]  = up,
 					[string.byte('s')]  = down }
 
-	if moves[key] then
+	local td = { 	[left]	= right,
+					[right]	= left,
+					[down]	= up,
+					[up]	= down }
+
+	if moves[key] and td[moves[key]] ~= snake.dir then
 		snake.dir = moves[key]
 	end
 end
 
 init()
 
-
 while true do
-	if timer:diff() then
-		handleInput()
-		move()
-		
-		drawScreen()
-		if checkCollision() then
-			os.exit()
-		end
+	handleInput()
+	move()
+	drawScreen()
+	if checkCollision() then
+		os.exit()
 	end
+	timer:sleep(gameSpeed)
 end
