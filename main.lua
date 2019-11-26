@@ -35,14 +35,6 @@ local snake = {list = {}, dir = down}
 local food = {x = {}, y = {}, present = false}
 local gameSpeed = 3
 
-function printAll()
-	local it = snake.list
-	repeat
-		print(it.value.x, it.value.y)
-		it = it.next
-	until it == snake.list
-end
-
 function move()
 	local head = snake.list.value
 
@@ -57,7 +49,8 @@ function checkFood()
 	local head = snake.list
 
 	if (head.value.x == food.x and head.value.y == food.y) then
-		return true
+		list.push_back(snake.list, {})
+		food.present = false
 	end
 end
 
@@ -65,10 +58,7 @@ function checkCollision()
 	local head = snake.list
 	local it = head.next
 
-	if checkFood() then
-		list.push_back(snake.list, {})
-		food.present = false
-	end
+	checkFood()
 	if (head.value.x < 0 or head.value.y < 0 or
 		head.value.x > boardSize.width + 1 or head.value.y > boardSize.height + 1) then
 		return true
@@ -87,10 +77,10 @@ function setSnake()
 	local a = boardSize.width / 2 + 1
 	local b = boardSize.height / 2
 
-	body = list.push_back(nil, {x = a, y = b})
-	list.push_back(body, {x = a, y = b - 1})
-	list.push_back(body, {x = a, y = b - 2})
-	list.push_back(body, {x = a, y = b - 3})
+	body =	list.push_back(nil, {x = a, y = b})
+			list.push_back(body, {x = a, y = b - 1})
+			list.push_back(body, {x = a, y = b - 2})
+			list.push_back(body, {x = a, y = b - 3})
 
 	snake.list = body
 end
@@ -161,6 +151,7 @@ end
 function drawScreen()
 	stdscr:erase()
 
+	-- draw borders
 	for x = 0, boardSize.width + 2 do
 		for y = 0, boardSize.height + 2 do
 			local board_val = board[x][y]
@@ -169,6 +160,7 @@ function drawScreen()
 		end
 	end
 
+	-- increase the speed if  the level is achieved
 	if not food.present then
 		if list.len(snake.list) % 5 == 0 then
 			if gameSpeed - 0.2 > 0 then
@@ -179,11 +171,13 @@ function drawScreen()
 		end
 	end
 
+	-- draw food
 	setFood()
 	if food.present then
 		draw_point(food.x, food.y, COLOR_RED, "")
 	end
 
+	-- draw snake
 	local it = snake.list
 	repeat
 		draw_point(it.value.x, it.value.y, COLOR_RED)
