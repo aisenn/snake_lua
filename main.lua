@@ -31,7 +31,8 @@ local board = {}
 local boardSize = {width = 10, height = 10}
 local char = {}
 
-snake = {list = {}, dir = down}
+local snake = {list = {}, dir = down}
+local food = {x = {}, y = {}, present = false}
 
 function printAll()
 	local it = snake.list
@@ -52,7 +53,6 @@ function move()
 end
 
 function checkFood()
-	local food = {x = 4, y = 1}
 
 	local head = snake.list
 
@@ -66,7 +66,9 @@ function checkCollision()
 	local it = head.next
 
 	if checkFood() then
-		return true
+		-- print(food.x, food.y)
+		list.push_back(snake.list, {})
+		food.present = false
 	end
 	if (head.value.x < 0 or head.value.y < 0 or
 		head.value.x > boardSize.width + 1 or head.value.y > boardSize.height + 1) then
@@ -94,7 +96,31 @@ function setSnake()
 	snake.list = body
 end
 
+function setFood()
+	if food.present then return end
+	local x
+	local y
+
+	repeat
+		x = math.random(boardSize.width)
+		y = math.random(boardSize.height)
+		local it = snake.list
+
+		food.present = true
+		repeat
+			if (x == it.value.x and y == it.value.y) then
+				food.present = false
+			end
+			it = it.next
+		until it == snake.list	
+	until food.present == true
+
+	food.x = x
+	food.y = y
+end
+
 function init()
+	math.randomseed(os.time())
 	setSnake()
 
 	curses.initscr()
@@ -144,6 +170,11 @@ function drawScreen()
 		end
 	end
 
+	setFood()
+	if food.present then
+		draw_point(food.x, food.y, COLOR_RED, "$")
+	end
+
 	local it = snake.list
 	repeat
 		draw_point(it.value.x, it.value.y, COLOR_RED)
@@ -181,13 +212,15 @@ end
 
 init()
 
+
 while true do
 	if timer:diff() then
 		handleInput()
 		move()
+		
+		drawScreen()
 		if checkCollision() then
 			os.exit()
 		end
-		drawScreen()
 	end
 end

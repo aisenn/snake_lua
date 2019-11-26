@@ -15,7 +15,7 @@ function print_r(arr, indentLevel)
         if type(value) == "table" then
             str = str..indentStr..tostring(index)..": \n"..print_r(value, (indentLevel + 1))
         else 
-            str = str..indentStr..tostring(index)..": "..value.."\n"
+            str = str..indentStr..tostring(index)..": "..tostring(value).."\n"
         end
     end
     return str
